@@ -14,3 +14,17 @@
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::get('/pubkey', function () {
+	\Mpesa::pubkey();
+});
+
+Route::post('/c2b/confirmation', function () {
+	\Mpesa::c2b_confirmation();
+});
+
+Route::post('/c2b/validation', function () {
+	\Mpesa::c2b_validation();
+});
+
+
