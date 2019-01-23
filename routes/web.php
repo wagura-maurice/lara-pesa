@@ -20,4 +20,7 @@ Route::post('/c2b/simulate', 'MpesaController@simulate_c2b')->name('mpesa.simula
 Route::post('/c2b/confirmation', 'MpesaController@confirm_c2b')->name('mpesa.confirm_c2b');
 Route::post('/c2b/validation', 'MpesaController@validate_c2b')->name('mpesa.validate_c2b');
 
+Route::get('/check_balance', 'MpesaController@check_balance')->name('mpesa.check_balance');
+Route::post('/check_balance/callback', 'MpesaController@check_balance_callback')->name('mpesa.check_balance.callback');
+
 

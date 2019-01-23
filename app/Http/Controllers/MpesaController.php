@@ -264,6 +264,14 @@ class MpesaController extends Controller
         return $response;
     }
 
+    /**
+     * C2B Validation
+     * 
+     * This method is used to validate a C2B Transaction aganist an various methods set by the developer
+     * 
+     * @param array $request from mpesa api
+     * @return json respone for payment accepted or rejected
+     */
     public function validate_c2b(Request $request) {
     	Log::info("validating");
         Log::info(print_r($request->all(),true));
@@ -288,6 +296,14 @@ class MpesaController extends Controller
         }
     }
 
+    /**
+     * C2B Confirmation
+     * 
+     * This method is used to confirm a C2B Transaction that has passed various methods set by the developer during validation
+     * 
+     * @param array $request from mpesa api
+     * @return json respone for payment detials i.e transcation code and timestamps e.t.c
+     */
     public function confirm_c2b(Request $request) {
     	Log::info("confirming");
         Log::info(print_r($request->all(), true));        
@@ -309,13 +325,19 @@ class MpesaController extends Controller
             'Remarks' => 'Remarks or short description',
             'Initiator' => $this->initiator_username,
             'SecurityCredential' => $this->cred,
-            'QueueTimeOutURL' => 'https://dev.matrixcyber.co.ke/cb.php',
-            'ResultURL' => 'https://dev.matrixcyber.co.ke/cb.php'
+            'QueueTimeOutURL' => $this->callback_baseurl.'check_balance/callback',
+            'ResultURL' => $this->callback_baseurl.'check_balance/callback'
         );
         $data = json_encode($data);
         $url = $this->base_url.'accountbalance/v1/query';
         $response = $this->submit_request($url, $data);
         return $response;
+    }
+
+    public function check_balance_callback(Request $request) {
+    	Log::info("checking balance");
+        Log::info(print_r($request->all(), true));        
+        return ;
     }
 
     /**
