@@ -101,10 +101,10 @@ class MpesaController extends Controller
         //$enc = '';
         openssl_public_encrypt($this->initiator_password, $output, $pubkey, OPENSSL_PKCS1_PADDING);
         //$enc .= $output;
-        $this->cred = base64_encode($output);
+        // $this->cred = base64_encode($output);
         
         //We override the above $this->cred with the testing credentials
-        //$this->cred = 'jQGehsgnujMdEnVOhGq3YdX72blQnpZ+RPgYhe15kU2+UiUkauYDbsxbv+rgVgK4nKU/90R6V7CZDx4+e6KcYQMKCwJht9FfdxG3gC8g2fgxlrCvR+RnObwLOBfJ9htDVyUCJjxP31J/RoC7j25N3g7WDRfcoDXrhRUmG9NGLua+leF6ssJrNxFv6S0aT8S1ihl3aueGAuZxWr7OnbagZZElPueAZKEs8IJDKCh4xkZVUevvUysZCZuHqchMKLYDv80zK/XJ46/Ja/7F1+Qw7180bR/XcptV3ttXV56kGvJ/GMp6FUUem32o2bJMvu+6AkqJnczj0QNq5ZVtTudjvg==';
+        $this->cred = 'jQGehsgnujMdEnVOhGq3YdX72blQnpZ+RPgYhe15kU2+UiUkauYDbsxbv+rgVgK4nKU/90R6V7CZDx4+e6KcYQMKCwJht9FfdxG3gC8g2fgxlrCvR+RnObwLOBfJ9htDVyUCJjxP31J/RoC7j25N3g7WDRfcoDXrhRUmG9NGLua+leF6ssJrNxFv6S0aT8S1ihl3aueGAuZxWr7OnbagZZElPueAZKEs8IJDKCh4xkZVUevvUysZCZuHqchMKLYDv80zK/XJ46/Ja/7F1+Qw7180bR/XcptV3ttXV56kGvJ/GMp6FUUem32o2bJMvu+6AkqJnczj0QNq5ZVtTudjvg==';
     }
 
     /**
@@ -178,7 +178,7 @@ class MpesaController extends Controller
             'Remarks' => 'This is a test comment or remark',
             'QueueTimeOutURL' => $this->callback_baseurl.'b2c/callback',
             'ResultURL' => $this->callback_baseurl.'b2c/callback',
-            'Occasion' => '' //Optional
+            'Occasion' => 'Optional' //Optional
         );
         $data = json_encode($request_data);
         $url = $this->base_url.'b2c/v1/paymentrequest';
@@ -210,17 +210,17 @@ class MpesaController extends Controller
      * @return object Curl Response from submit_request, FALSE on failure
      */
 
-    public function simulate_b2b($amount, $shortcode){
+    public function simulate_b2b(Request $request){
         $request_data = array(
             'Initiator' => $this->initiator_username,
             'SecurityCredential' => $this->cred,
             'CommandID' => 'BusinessToBusinessTransfer',
             'SenderIdentifierType' => 'Shortcode',
             'RecieverIdentifierType' => 'Shortcode',
-            'Amount' => 100,
+            'Amount' => $request->amount,
             'PartyA' => $this->paybill,
-            'PartyB' => 600000,
-            'AccountReference' => 'Bennito',
+            'PartyB' => $request->shortcode,
+            'AccountReference' => 'demo',
             'Remarks' => 'This is a test comment or remark',
             'QueueTimeOutURL' => $this->callback_baseurl.'b2b/callback',
             'ResultURL' => $this->callback_baseurl.'b2b/callback',
@@ -378,7 +378,7 @@ class MpesaController extends Controller
      * @return object Curl Response from submit_request, FALSE on failure
      */
      
-    public function status_request($transaction = 'LH7819VXPE'){
+    public function status_request(Request $request){
         $data = array(
             'CommandID' => 'TransactionStatusQuery',
             'PartyA' => $this->paybill,
@@ -386,15 +386,21 @@ class MpesaController extends Controller
             'Remarks' => 'Testing API',
             'Initiator' => $this->initiator_username,
             'SecurityCredential' => $this->cred,
-            'QueueTimeOutURL' => 'https://dev.matrixcyber.co.ke/cb.php',
-            'ResultURL' => 'https://dev.matrixcyber.co.ke/cb.php',
-            'TransactionID' => $transaction,
+            'QueueTimeOutURL' => $this->callback_baseurl.'status/callback',
+            'ResultURL' => $this->callback_baseurl.'status/callback',
+            'TransactionID' => $request->transaction_code,
             'Occassion' => 'Test'
         );
         $data = json_encode($data);
         $url = $this->base_url.'transactionstatus/v1/query';
         $response = $this->submit_request($url, $data);
         return $response;
+    }
+
+    public function status_request_callback(Request $request) {
+    	Log::info("checking status request");
+        Log::info(print_r($request->all(), true));        
+        return ;
     }
 
     /**
@@ -408,23 +414,29 @@ class MpesaController extends Controller
      * @return object Curl Response from submit_request, FALSE on failure
      */
      
-    public function reverse_transaction($receiver, $trx_id, $amount){
+    public function reverse_transaction(Request $request){
         $data = array(
             'CommandID' => 'TransactionReversal',
-            'ReceiverParty' => $this->test_msisdn,
+            'ReceiverParty' => \Lara_Pesa::phone_suffix($request->receiver),
             'RecieverIdentifierType' => 1, //1=MSISDN, 2=Till_Number, 4=Shortcode
             'Remarks' => 'Testing',
-            'Amount' => $amount,
+            'Amount' => $request->amount,
             'Initiator' => $this->initiator_username,
             'SecurityCredential' => $this->cred,
-            'QueueTimeOutURL' => 'https://domain.com',
-            'ResultURL' => 'https://domain.com',
-            'TransactionID' => 'LIE81C8EFI'
+            'QueueTimeOutURL' => $this->callback_baseurl.'reverse/transaction/callback',
+            'ResultURL' => $this->callback_baseurl.'reverse/transaction/callback',
+            'TransactionID' => $request->trx_id
         );
         $data = json_encode($data);
         $url = $this->base_url.'reversal/v1/request';
         $response = $this->submit_request($url, $data);
         return $response;
+    }
+
+    public function reverse_transaction_callback(Request $request) {
+    	Log::info("reverseing transaction");
+        Log::info(print_r($request->all(), true));        
+        return ;
     }
     
     /*********************************************************************
