@@ -11,12 +11,22 @@
 |
 */
 
+// use App\Helpers\Mpesa;
+
+use Illuminate\Http\Request;
+// use Illuminate\Http\Response;
+
 Route::get('/', function () {
     return view('welcome');
 });
 
 Route::get('/pubkey', function () {
-	\Mpesa::pubkey();
+	echo \Mpesa::pubkey();
+});
+
+Route::post('/c2b/simulate', function (Request $request) {
+	// dd($request);
+	\Mpesa::simulate_c2b($request->amount, $request->msisdn, $request->ref);
 });
 
 Route::post('/c2b/confirmation', function () {

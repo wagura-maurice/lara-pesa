@@ -1,7 +1,5 @@
 <?php
 
-namespace App\Helpers;
- 
 /**
  * This is a simple PHP class for the MPesa API.
  * 
@@ -10,7 +8,12 @@ namespace App\Helpers;
  * @author Ben Muriithi <benmuriithi929@gmail.com>
  */
 
-class Mpesa {
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+
+class MpesaController extends Controller
+{
     /**
      * The common part of the MPesa API endpoints
      * @var string $base_url
@@ -88,7 +91,7 @@ class Mpesa {
         $this->initiator_username = 'test7';                    //Initiator Username. I dont where how to get this.
         $this->initiator_password = '4567';                 //Initiator password. I dont know where to get this either.
         
-        $this->callback_baseurl = 'https://62b5f392.ngrok.io/';
+        $this->callback_baseurl = 'https://38653d24.ngrok.io/';
         $this->test_msisdn = '254708374149';
         
         $pubkey = file_get_contents(public_path() . '\cert\cert.cer');
@@ -161,7 +164,7 @@ class Mpesa {
      * @return object Curl Response from submit_request, FALSE on failure
      */
 
-    public static function b2c($amount, $phone){
+    public function b2c($amount, $phone){
         $request_data = array(
             'InitiatorName' => $this->initiator_username,
             'SecurityCredential' => $this->cred,
@@ -190,7 +193,7 @@ class Mpesa {
      * @return object Curl Response from submit_request, FALSE on failure
      */
 
-    public static function b2b($amount, $shortcode){
+    public function b2b($amount, $shortcode){
         $request_data = array(
             'Initiator' => $this->initiator_username,
             'SecurityCredential' => $this->cred,
@@ -221,7 +224,7 @@ class Mpesa {
      * @return object Curl Response from submit_request, FALSE on failure
      */
 
-    public static function c2b(){
+    public function c2b(){
         $request_data = array(
             'ShortCode' => $this->paybill,
             'ResponseType' => 'Completed',
@@ -245,7 +248,7 @@ class Mpesa {
      * @return object Curl Response from submit_request, FALSE on failure
      */
 
-    public static function simulate_c2b($amount, $msisdn, $ref){
+    public function simulate_c2b($amount, $msisdn, $ref){
         $data = array(
             'ShortCode' => $this->paybill,
             'CommandID' => 'CustomerPayBillOnline',
@@ -266,7 +269,7 @@ class Mpesa {
      * 
      * @return object Curl Response from submit_request, FALSE on failure
      */
-    public static function check_balance(){
+    public function check_balance(){
         $data = array(
             'CommandID' => 'AccountBalance',
             'PartyA' => $this->paybill,
@@ -292,7 +295,7 @@ class Mpesa {
      * @return object Curl Response from submit_request, FALSE on failure
      */
      
-    public static function status_request($transaction = 'LH7819VXPE'){
+    public function status_request($transaction = 'LH7819VXPE'){
         $data = array(
             'CommandID' => 'TransactionStatusQuery',
             'PartyA' => $this->paybill,
@@ -322,7 +325,7 @@ class Mpesa {
      * @return object Curl Response from submit_request, FALSE on failure
      */
      
-    public static function reverse_transaction($receiver, $trx_id, $amount){
+    public function reverse_transaction($receiver, $trx_id, $amount){
         $data = array(
             'CommandID' => 'TransactionReversal',
             'ReceiverParty' => $this->test_msisdn,
@@ -347,7 +350,7 @@ class Mpesa {
      * 
      * *******************************************************************/
      
-    public static function lnmo_request($amount, $phone, $ref = "Payment"){
+    public function lnmo_request($amount, $phone, $ref = "Payment"){
         if(!is_numeric($amount) || $amount < 10 || !is_numeric($phone)){
             throw new Exception("Invalid amount and/or phone number. Amount should be 10 or more, phone number should be in the format 254xxxxxxxx");
             return FALSE;
