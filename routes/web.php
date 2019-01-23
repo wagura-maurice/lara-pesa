@@ -24,6 +24,7 @@ Route::get('/check_balance', 'MpesaController@check_balance')->name('mpesa.check
 Route::post('/check_balance/callback', 'MpesaController@check_balance_callback')->name('mpesa.check_balance.callback');
 
 Route::post('/lnmo/request', 'MpesaController@lnmo_request')->name('mpesa.lnmo_request');
-Route::post('/lnmo/callback', 'MpesaController@lnmo_request_callback')->name('mpesa.lnmo_request_callback');
+Route::post('/lnmo/callback', 'MpesaController@lnmo_callback')->name('mpesa.lnmo_callback');
+Route::post('/lnmo/query', 'MpesaController@lnmo_query')->name('mpesa.lnmo_query');
 
 

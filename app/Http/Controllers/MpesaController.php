@@ -404,7 +404,14 @@ class MpesaController extends Controller
      *  LNMO APIs
      * 
      * *******************************************************************/
-     
+    /**
+     * lnmo request
+     * 
+     * This method is used to initiate online payment on behalf of a customer.
+     * 
+     * @param array $request from mpesa api
+     * @return json respone for payment detials i.e transcation code and timestamps e.t.c
+     */
     public function lnmo_request(Request $request){
         /*if(!is_numeric($request->amount) || $request->amount < 10 || !is_numeric($request->phone)){
             throw new Exception("Invalid amount and/or phone number. Amount should be 10 or more, phone number should be in the format 254xxxxxxxx");
@@ -433,24 +440,32 @@ class MpesaController extends Controller
     }
 
     /**
-     * lnmo callback"
+     * lnmo callback
      * 
      * This method is used to confirm a lnmo Transaction that has passed various methods set by the developer during validation
      * 
      * @param array $request from mpesa api
      * @return json respone for payment detials i.e transcation code and timestamps e.t.c
      */
-    public function lnmo_request_callback(Request $request) {
+    public function lnmo_callback(Request $request) {
     	Log::info("lnmo callback");
         Log::info(print_r($request->all(), true));        
         return ;
     }
     
-    private function lnmo_query($checkoutRequestID = null){
+    /**
+     * lnmo query
+     * 
+     * This method is used to check the status of a Lipa Na M-Pesa Online Payment.
+     * 
+     * @param array $request from mpesa api
+     * @return json respone for payment detials i.e transcation code and timestamps e.t.c
+     */
+    public function lnmo_query(Request $request){
         $timestamp = Carbon::now()->format('YmdHis');
         $passwd = base64_encode($this->lipa_na_mpesa.$this->lipa_na_mpesa_key.$timestamp);
         
-        if($checkoutRequestID == null || $checkoutRequestID == ''){
+        if($request->checkoutRequestID == null || $request->checkoutRequestID == ''){
             //throw new Exception("Checkout Request ID cannot be null");
             return FALSE;
         }
@@ -459,7 +474,7 @@ class MpesaController extends Controller
             'BusinessShortCode' => $this->lipa_na_mpesa,
             'Password' => $passwd,
             'Timestamp' => $timestamp,
-            'CheckoutRequestID' => $checkoutRequestID
+            'CheckoutRequestID' => $request->checkoutRequestID
         );
         $data = json_encode($data);
         $url = $this->base_url.'stkpushquery/v1/query';
