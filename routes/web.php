@@ -11,30 +11,13 @@
 |
 */
 
-// use App\Helpers\Mpesa;
-
-use Illuminate\Http\Request;
-// use Illuminate\Http\Response;
-
 Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/pubkey', function () {
-	echo \Mpesa::pubkey();
-});
-
-Route::post('/c2b/simulate', function (Request $request) {
-	// dd($request);
-	\Mpesa::simulate_c2b($request->amount, $request->msisdn, $request->ref);
-});
-
-Route::post('/c2b/confirmation', function () {
-	\Mpesa::c2b_confirmation();
-});
-
-Route::post('/c2b/validation', function () {
-	\Mpesa::c2b_validation();
-});
+Route::get('/c2b/register', 'MpesaController@register_c2b')->name('mpesa.register_c2b');
+Route::post('/c2b/simulate', 'MpesaController@simulate_c2b')->name('mpesa.simulate_c2b');
+Route::post('/c2b/confirmation', 'MpesaController@confirm_c2b')->name('mpesa.confirm_c2b');
+Route::post('/c2b/validation', 'MpesaController@validate_c2b')->name('mpesa.validate_c2b');
 
 

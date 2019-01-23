@@ -10,6 +10,8 @@
 
 namespace App\Http\Controllers;
 
+use Log;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class MpesaController extends Controller
@@ -224,7 +226,7 @@ class MpesaController extends Controller
      * @return object Curl Response from submit_request, FALSE on failure
      */
 
-    public function c2b(){
+    public function register_c2b(){
         $request_data = array(
             'ShortCode' => $this->paybill,
             'ResponseType' => 'Completed',
@@ -248,18 +250,48 @@ class MpesaController extends Controller
      * @return object Curl Response from submit_request, FALSE on failure
      */
 
-    public function simulate_c2b($amount, $msisdn, $ref){
+    public function simulate_c2b(Request $request){
         $data = array(
             'ShortCode' => $this->paybill,
             'CommandID' => 'CustomerPayBillOnline',
-            'Amount' => $amount,
-            'Msisdn' => $msisdn,
-            'BillRefNumber' => $ref
+            'Amount' => $request->amount,
+            'Msisdn' => $request->msisdn,
+            'BillRefNumber' => $request->ref
         );
         $data = json_encode($data);
         $url = $this->base_url.'c2b/v1/simulate';
         $response = $this->submit_request($url, $data);
         return $response;
+    }
+
+    public function validate_c2b(Request $request) {
+    	Log::info("validating");
+        Log::info(print_r($request->all(),true));
+
+        $data = (object) $request;
+        $transaction_id = Carbon::now()->format('ymdis');
+
+        $MoneyIn = TRUE;
+
+        if ($MoneyIn) {
+            return response()->json([
+                "ResultCode" => 0,
+                "ResultDesc" => "Payment Accepted",
+                "ThirdPartyTransID" => $transaction_id
+            ]);
+        } else {
+            return response()->json([
+                "ResultCode" => 1,
+                "ResultDesc" => "Payment Rejected",
+                "ThirdPartyTransID" => $transaction_id
+            ]);
+        }
+    }
+
+    public function confirm_c2b(Request $request) {
+    	Log::info("confirming");
+        Log::info(print_r($request->all(), true));        
+        return ;
     }
 
     /**
