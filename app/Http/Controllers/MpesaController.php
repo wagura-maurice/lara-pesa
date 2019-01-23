@@ -11,6 +11,7 @@
 namespace App\Http\Controllers;
 
 use Log;
+use Exception;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -404,35 +405,49 @@ class MpesaController extends Controller
      * 
      * *******************************************************************/
      
-    public function lnmo_request($amount, $phone, $ref = "Payment"){
-        if(!is_numeric($amount) || $amount < 10 || !is_numeric($phone)){
+    public function lnmo_request(Request $request){
+        /*if(!is_numeric($request->amount) || $request->amount < 10 || !is_numeric($request->phone)){
             throw new Exception("Invalid amount and/or phone number. Amount should be 10 or more, phone number should be in the format 254xxxxxxxx");
             return FALSE;
-        }
-        $timestamp = date('YmdHis');
+        }*/
+        $timestamp = Carbon::now()->format('YmdHis');
         $passwd = base64_encode($this->lipa_na_mpesa.$this->lipa_na_mpesa_key.$timestamp);
         $data = array(
             'BusinessShortCode' => $this->lipa_na_mpesa,
             'Password' => $passwd,
             'Timestamp' => $timestamp,
             'TransactionType' => 'CustomerPayBillOnline',
-            'Amount' => $amount,
-            'PartyA' => $phone,
+            'Amount' => $request->amount,
+            'PartyA' => \Lara_Pesa::phone_suffix($request->phone),
             'PartyB' => $this->lipa_na_mpesa,
-            'PhoneNumber' => $phone,
-            'CallBackURL' => 'https://dev.matrixcyber.co.ke/cb.php',
-            'AccountReference' => $ref,
+            'PhoneNumber' => \Lara_Pesa::phone_suffix($request->phone),
+            'CallBackURL' => $this->callback_baseurl.'lnmo/callback',
+            'AccountReference' => $request->ref,
             'TransactionDesc' => 'testing too',
         );
         $data = json_encode($data);
         $url = $this->base_url.'stkpush/v1/processrequest';
         $response = $this->submit_request($url, $data);
-        $result = json_decode($response);
-        return $result;
+        // $result = json_decode($response);
+        return $response;
+    }
+
+    /**
+     * lnmo callback"
+     * 
+     * This method is used to confirm a lnmo Transaction that has passed various methods set by the developer during validation
+     * 
+     * @param array $request from mpesa api
+     * @return json respone for payment detials i.e transcation code and timestamps e.t.c
+     */
+    public function lnmo_request_callback(Request $request) {
+    	Log::info("lnmo callback");
+        Log::info(print_r($request->all(), true));        
+        return ;
     }
     
     private function lnmo_query($checkoutRequestID = null){
-        $timestamp = date('YmdHis');
+        $timestamp = Carbon::now()->format('YmdHis');
         $passwd = base64_encode($this->lipa_na_mpesa.$this->lipa_na_mpesa_key.$timestamp);
         
         if($checkoutRequestID == null || $checkoutRequestID == ''){

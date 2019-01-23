@@ -223,6 +223,8 @@ return [
         'URL' => Illuminate\Support\Facades\URL::class,
         'Validator' => Illuminate\Support\Facades\Validator::class,
         'View' => Illuminate\Support\Facades\View::class,
+
+        'Lara_Pesa' => App\Helpers\Lara_Pesa::class,
     ],
 
 ];

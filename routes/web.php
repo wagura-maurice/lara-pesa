@@ -23,4 +23,7 @@ Route::post('/c2b/validation', 'MpesaController@validate_c2b')->name('mpesa.vali
 Route::get('/check_balance', 'MpesaController@check_balance')->name('mpesa.check_balance');
 Route::post('/check_balance/callback', 'MpesaController@check_balance_callback')->name('mpesa.check_balance.callback');
 
+Route::post('/lnmo/request', 'MpesaController@lnmo_request')->name('mpesa.lnmo_request');
+Route::post('/lnmo/callback', 'MpesaController@lnmo_request_callback')->name('mpesa.lnmo_request_callback');
+
 
