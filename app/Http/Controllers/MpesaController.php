@@ -167,23 +167,37 @@ class MpesaController extends Controller
      * @return object Curl Response from submit_request, FALSE on failure
      */
 
-    public function b2c($amount, $phone){
+    public function simulate_b2c(Request $request){
         $request_data = array(
             'InitiatorName' => $this->initiator_username,
             'SecurityCredential' => $this->cred,
             'CommandID' => 'PromotionPayment',
-            'Amount' => $amount,
+            'Amount' => $request->amount,
             'PartyA' => $this->paybill,
-            'PartyB' => $phone,
+            'PartyB' => \Lara_Pesa::phone_suffix($request->phone),
             'Remarks' => 'This is a test comment or remark',
-            'QueueTimeOutURL' => 'https://dev.matrixcyber.co.ke/cb.php',
-            'ResultURL' => 'https://dev.matrixcyber.co.ke/cb.php',
+            'QueueTimeOutURL' => $this->callback_baseurl.'b2c/callback',
+            'ResultURL' => $this->callback_baseurl.'b2c/callback',
             'Occasion' => '' //Optional
         );
         $data = json_encode($request_data);
         $url = $this->base_url.'b2c/v1/paymentrequest';
         $response = $this->submit_request($url, $data);
         return $response;
+    }
+
+    /**
+     * B2C Callback
+     * 
+     * This method is used to confirm a B2C Transaction that has passed various methods set by the developer during validation
+     * 
+     * @param array $request from mpesa api
+     * @return json respone for payment detials i.e transcation code and timestamps e.t.c
+     */
+    public function callback_b2c(Request $request) {
+    	Log::info("b2c callback");
+        Log::info(print_r($request->all(), true));        
+        return ;
     }
 
     /**
@@ -196,7 +210,7 @@ class MpesaController extends Controller
      * @return object Curl Response from submit_request, FALSE on failure
      */
 
-    public function b2b($amount, $shortcode){
+    public function simulate_b2b($amount, $shortcode){
         $request_data = array(
             'Initiator' => $this->initiator_username,
             'SecurityCredential' => $this->cred,
@@ -208,13 +222,27 @@ class MpesaController extends Controller
             'PartyB' => 600000,
             'AccountReference' => 'Bennito',
             'Remarks' => 'This is a test comment or remark',
-            'QueueTimeOutURL' => $this->callback_baseurl.'b2b/timeout.php',
-            'ResultURL' => $this->callback_baseurl.'b2b/result_url.php',
+            'QueueTimeOutURL' => $this->callback_baseurl.'b2b/callback',
+            'ResultURL' => $this->callback_baseurl.'b2b/callback',
         );
         $data = json_encode($request_data);
         $url = $this->base_url.'b2b/v1/paymentrequest';
         $response = $this->submit_request($url, $data);
         return $response;
+    }
+
+     /**
+     * B2B Callback
+     * 
+     * This method is used to confirm a B2B Transaction that has passed various methods set by the developer during validation
+     * 
+     * @param array $request from mpesa api
+     * @return json respone for payment detials i.e transcation code and timestamps e.t.c
+     */
+    public function callback_b2b(Request $request) {
+    	Log::info("b2b callback");
+        Log::info(print_r($request->all(), true));        
+        return ;
     }
 
     /**
@@ -256,7 +284,7 @@ class MpesaController extends Controller
             'ShortCode' => $this->paybill,
             'CommandID' => 'CustomerPayBillOnline',
             'Amount' => $request->amount,
-            'Msisdn' => $request->msisdn,
+            'Msisdn' => \Lara_Pesa::phone_suffix($request->msisdn),
             'BillRefNumber' => $request->ref
         );
         $data = json_encode($data);
@@ -464,7 +492,7 @@ class MpesaController extends Controller
     public function lnmo_query(Request $request){
         $timestamp = Carbon::now()->format('YmdHis');
         $passwd = base64_encode($this->lipa_na_mpesa.$this->lipa_na_mpesa_key.$timestamp);
-        
+
         if($request->checkoutRequestID == null || $request->checkoutRequestID == ''){
             //throw new Exception("Checkout Request ID cannot be null");
             return FALSE;
