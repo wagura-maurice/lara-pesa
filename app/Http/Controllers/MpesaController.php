@@ -11,6 +11,7 @@
 namespace App\Http\Controllers;
 
 use Log;
+use File;
 use Exception;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -97,15 +98,46 @@ class MpesaController extends Controller
         $this->callback_baseurl = 'https://38653d24.ngrok.io/';
         $this->test_msisdn = '254708374149';
         
-        $pubkey = file_get_contents(public_path() . '\cert\cert.cer');
-        //$enc = '';
+        /*$pubkey = file_get_contents(public_path() . '\cert\cert.cer');
         openssl_public_encrypt($this->initiator_password, $output, $pubkey, OPENSSL_PKCS1_PADDING);
-        //$enc .= $output;
-        // $this->cred = base64_encode($output);
+        $this->cred = base64_encode($output);*/
         
         //We override the above $this->cred with the testing credentials
-        $this->cred = 'jQGehsgnujMdEnVOhGq3YdX72blQnpZ+RPgYhe15kU2+UiUkauYDbsxbv+rgVgK4nKU/90R6V7CZDx4+e6KcYQMKCwJht9FfdxG3gC8g2fgxlrCvR+RnObwLOBfJ9htDVyUCJjxP31J/RoC7j25N3g7WDRfcoDXrhRUmG9NGLua+leF6ssJrNxFv6S0aT8S1ihl3aueGAuZxWr7OnbagZZElPueAZKEs8IJDKCh4xkZVUevvUysZCZuHqchMKLYDv80zK/XJ46/Ja/7F1+Qw7180bR/XcptV3ttXV56kGvJ/GMp6FUUem32o2bJMvu+6AkqJnczj0QNq5ZVtTudjvg==';
+        // $this->cred = 'jQGehsgnujMdEnVOhGq3YdX72blQnpZ+RPgYhe15kU2+UiUkauYDbsxbv+rgVgK4nKU/90R6V7CZDx4+e6KcYQMKCwJht9FfdxG3gC8g2fgxlrCvR+RnObwLOBfJ9htDVyUCJjxP31J/RoC7j25N3g7WDRfcoDXrhRUmG9NGLua+leF6ssJrNxFv6S0aT8S1ihl3aueGAuZxWr7OnbagZZElPueAZKEs8IJDKCh4xkZVUevvUysZCZuHqchMKLYDv80zK/XJ46/Ja/7F1+Qw7180bR/XcptV3ttXV56kGvJ/GMp6FUUem32o2bJMvu+6AkqJnczj0QNq5ZVtTudjvg==';
     }
+
+    public function setCred() {
+
+		$pubkey=File::get(__DIR__.'/../../../public/cert/sandbox.cer');
+	
+		openssl_public_encrypt($this->initiator_password, $output, $pubkey, OPENSSL_PKCS1_PADDING);
+		// $this->cred = base64_encode($output);
+
+        return $this->cred = base64_encode($output);
+	}
+
+	public function generateAccessToken(){
+		$credentials = base64_encode($this->consumer_key.':'.$this->consumer_secret);
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL, 'https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials');
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Authorization: Basic '.$credentials, 'Content-Type: application/json'));
+		$response = curl_exec($ch);
+		curl_close($ch);
+		$response = json_decode($response);
+		$access_token = $response->access_token;
+       // \Log::info($access_token);
+		// The above $access_token expires after an hour, find a way to cache it to minimize requests to the server
+        
+        if(!$access_token){
+			//throw new Exception("Invalid access token generated");
+			//die;
+			return FALSE;
+		}
+
+		$this->access_token = $access_token;
+        return $access_token;   
+	}
 
     /**
      * Submit Request
@@ -118,44 +150,29 @@ class MpesaController extends Controller
      * @throws exception if the Access Token is not valid
      */
 
-    private function submit_request($url, $data){ // Returns cURL response
-        
-        $credentials = base64_encode($this->consumer_key.':'.$this->consumer_secret);
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, 'https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials');
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);  
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Authorization: Basic '.$credentials, 'Content-Type: application/json'));
-        $response = curl_exec($ch);
-        print_r(curl_error($ch));
-        curl_close($ch);
-        print_r($response);
-        
-        $response = json_decode($response);
-        
-        $access_token = $response->access_token;
-        
-        // The above $access_token expires after an hour, find a way to cache it to minimize requests to the server
-        if(!$access_token){
-            throw new Exception("Invalid access token generated");
-        }
-        
-        if($access_token != '' || $access_token !== FALSE){
-            $curl = curl_init();
-            curl_setopt($curl, CURLOPT_URL, $url);
-            curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json','Authorization: Bearer '.$access_token));
-            curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false); 
-            curl_setopt($curl, CURLOPT_RETURNTRANSFER, TRUE);
-            curl_setopt($curl, CURLOPT_POST, TRUE);
-            curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
-            
-            $response = curl_exec($curl);
-            curl_close($curl);
-            return $response;
-        }else{
-            return FALSE;
-        }
-    }
+    private function submit_request($url, $data) {
+    // Returns cURL response
+		if(isset($this->access_token)){
+			$access_token = $this->access_token;
+		}else{
+			$access_token = $this->generateAccessToken();
+		}
+		if($access_token != '' || $access_token !== FALSE){
+			$curl = curl_init();
+			curl_setopt($curl, CURLOPT_URL, $url);
+			curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json','Authorization: Bearer '.$access_token));
+
+			curl_setopt($curl, CURLOPT_RETURNTRANSFER, TRUE);
+			curl_setopt($curl, CURLOPT_POST, TRUE);
+			curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
+
+			$response = curl_exec($curl);
+			curl_close($curl);
+			return $response;
+		}else{
+			return FALSE;
+		}
+	}
 
     /**
      * Business to Client
@@ -167,7 +184,9 @@ class MpesaController extends Controller
      * @return object Curl Response from submit_request, FALSE on failure
      */
 
-    public function simulate_b2c(Request $request){
+    public function simulate_b2c(Request $request) {
+    	//this function will set b2c credentials
+		$this->setCred();
         $request_data = array(
             'InitiatorName' => $this->initiator_username,
             'SecurityCredential' => $this->cred,

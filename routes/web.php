@@ -15,6 +15,9 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('/setCred', 'MpesaController@setCred')->name('mpesa.setCred');
+Route::get('/generateAccessToken', 'MpesaController@generateAccessToken')->name('mpesa.generateAccessToken');
+
 Route::post('/b2c/simulate', 'MpesaController@simulate_b2c')->name('mpesa.simulate.b2c');
 Route::post('/b2c/callback', 'MpesaController@callback_b2c')->name('mpesa.callback.b2c');
 
