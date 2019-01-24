@@ -15,6 +15,8 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('/test', 'MpesaController@test')->name('mpesa.test');
+
 Route::get('/setCred', 'MpesaController@setCred')->name('mpesa.setCred');
 Route::get('/generateAccessToken', 'MpesaController@generateAccessToken')->name('mpesa.generateAccessToken');
 
