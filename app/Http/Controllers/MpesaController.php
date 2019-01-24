@@ -95,15 +95,15 @@ class MpesaController extends Controller
         $this->initiator_username = 'test7';                    //Initiator Username. I dont where how to get this.
         $this->initiator_password = '4567';                 //Initiator password. I dont know where to get this either.
         
-        $this->callback_baseurl = 'https://9c80e481.ngrok.io/';
+        $this->callback_baseurl = 'https://2c6e13e7.ngrok.io/';
         $this->test_msisdn = '254708374149';
         
-        $pubkey = File::get(__DIR__.'/../../../public/cert/sandbox.cer');
-        openssl_public_encrypt($this->initiator_password, $output, $pubkey, OPENSSL_PKCS1_PADDING);
-        $this->cred = base64_encode($output);
+        // $pubkey = File::get(__DIR__.'/../../../public/cert/sandbox.cer');
+        // openssl_public_encrypt($this->initiator_password, $output, $pubkey, OPENSSL_PKCS1_PADDING);
+        // $this->cred = base64_encode($output);
         
         //We override the above $this->cred with the testing credentials
-        // $this->cred = 'jQGehsgnujMdEnVOhGq3YdX72blQnpZ+RPgYhe15kU2+UiUkauYDbsxbv+rgVgK4nKU/90R6V7CZDx4+e6KcYQMKCwJht9FfdxG3gC8g2fgxlrCvR+RnObwLOBfJ9htDVyUCJjxP31J/RoC7j25N3g7WDRfcoDXrhRUmG9NGLua+leF6ssJrNxFv6S0aT8S1ihl3aueGAuZxWr7OnbagZZElPueAZKEs8IJDKCh4xkZVUevvUysZCZuHqchMKLYDv80zK/XJ46/Ja/7F1+Qw7180bR/XcptV3ttXV56kGvJ/GMp6FUUem32o2bJMvu+6AkqJnczj0QNq5ZVtTudjvg==';
+        $this->cred = 'MZ5km4AI7X9BjTu5Li+cDfgKriCqxWEwWZZDqqQQZfofgXeUfRLHIkY5kYpjh8I4zw2r0Z7i1S/zoekBGXLdahVZz4q7bOFo2tS2suNPOTSwRXbGujqwDcuVX770UhpesV4BVs/dXhssZlH9etMiZXwROnyygcKuwGfGCM3Rz50dMSHMsUcuH9jZYW+HMuQp/mkqw8jGgxVCdOUpLo+s107vixV6yZ4MQBWljTxsqjSKopSdwZBqkbQVWaEktSV/AToFnLkn+PPuDP8TBIJfmPLPn+B07aALU2yThrwHAnXbDWePB9WbEJGanu2l4wUCMv2cH5yn3sj7qGr08MYT8A==';
     }
 
     public function test()
