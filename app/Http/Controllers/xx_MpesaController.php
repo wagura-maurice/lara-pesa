@@ -2,7 +2,7 @@
 
 /**
  * This is a simple PHP class for the MPesa API.
- *
+ * 
  * @package Mpesa API Client
  * @license http://mit.com/licence MIT LICENCE
  * @author Ben Muriithi <benmuriithi929@gmail.com>
@@ -73,42 +73,42 @@ class MpesaController extends Controller
      * @var string $cred
      */
     private $cred;
-
+    
     /**
      * Construct method
-     *
+     * 
      * Initializes the class with an array of API values.
-     *
+     * 
      * @param array $config
      * @return void
      * @throws exception if the values array is not valid
      */
-
+    
     public function __construct(){
-
+        
         $this->base_url = 'https://sandbox.safaricom.co.ke/mpesa/'; //Base URL for the API endpoints. This is basically the 'common' part of the API endpoints
         $this->consumer_key = 'uKxU78Y9q2cFruO2fKRWuofRCObzMQh8';   //App Key. Get it at https://developer.safaricom.co.ke
         $this->consumer_secret = 'By9NUqT7NGhzy5Pj';                    //App Secret Key. Get it at https://developer.safaricom.co.ke
-        $this->paybill = '600779';                                  //The paybill/till/lipa na mpesa number
+        $this->paybill = '603065';                                  //The paybill/till/lipa na mpesa number
         $this->lipa_na_mpesa = '174379';                                //Lipa Na Mpesa online checkout
         $this->lipa_na_mpesa_key = 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919';  //Lipa Na Mpesa online checkout password
-        $this->initiator_username = 'testapi779';                    //Initiator Username. I dont where how to get this.
-        $this->initiator_password = 'HaVh3tgp';                 //Initiator password. I dont know where to get this either.
-
-        $this->callback_baseurl = 'https://2cd98a8a.ngrok.io/';
+        $this->initiator_username = 'test7';                    //Initiator Username. I dont where how to get this.
+        $this->initiator_password = '4567';                 //Initiator password. I dont know where to get this either.
+        
+        $this->callback_baseurl = 'https://2c6e13e7.ngrok.io/';
         $this->test_msisdn = '254708374149';
-
-        $this->pubkey = File::get(__DIR__.'/../../../public/cert/sandbox.cer');;
-        openssl_public_encrypt($this->initiator_password, $output, $this->pubkey, OPENSSL_PKCS1_PADDING);
-        $this->cred = base64_encode($output);
-
+        
+        // $pubkey = File::get(__DIR__.'/../../../public/cert/sandbox.cer');
+        // openssl_public_encrypt($this->initiator_password, $output, $pubkey, OPENSSL_PKCS1_PADDING);
+        // $this->cred = base64_encode($output);
+        
         //We override the above $this->cred with the testing credentials
-        //$this->cred = 'VViilmaakUhlJg/cg9ynQrZ//AjrDxg1ryXQmHhUCFsQXL3YQm7uHIB00OWpsPI4G7futRTuHjrdkcpEFj/0zmgYcOn6kpOCTL/gDcI6b6u09DY8qU35Q3JD6T244uBd5x3f0skgshwTsIz9Q60dmhtcEBvlN2UTMaI4SDyfP2ylHik+PNDmSJkQvmboKSyFmByTL9WnN9hkEM5T1IAQ+iv5t8FPOoGujn1V6426nkmmF2Fqz0FNYvaAOda5Es8aN+PM82JYxYPYaaOpVLqUdgUS9qRC419IivDlHLmUd0xSRdy2Yah90Cb1tF5Iulv7ItD3a6isq+fDocVy/ErShQ==';
+        $this->cred = 'MZ5km4AI7X9BjTu5Li+cDfgKriCqxWEwWZZDqqQQZfofgXeUfRLHIkY5kYpjh8I4zw2r0Z7i1S/zoekBGXLdahVZz4q7bOFo2tS2suNPOTSwRXbGujqwDcuVX770UhpesV4BVs/dXhssZlH9etMiZXwROnyygcKuwGfGCM3Rz50dMSHMsUcuH9jZYW+HMuQp/mkqw8jGgxVCdOUpLo+s107vixV6yZ4MQBWljTxsqjSKopSdwZBqkbQVWaEktSV/AToFnLkn+PPuDP8TBIJfmPLPn+B07aALU2yThrwHAnXbDWePB9WbEJGanu2l4wUCMv2cH5yn3sj7qGr08MYT8A==';
     }
 
     public function test()
     {
-        return $this->pubkey;
+        return $this->cred;
     }
 
     /*public function setCred() {
@@ -130,7 +130,7 @@ class MpesaController extends Controller
 		$access_token = $response->access_token;
        // \Log::info($access_token);
 		// The above $access_token expires after an hour, find a way to cache it to minimize requests to the server
-
+        
         if(!$access_token){
 			//throw new Exception("Invalid access token generated");
 			//die;
@@ -138,14 +138,14 @@ class MpesaController extends Controller
 		}
 
 		$this->access_token = $access_token;
-        return $access_token;
+        return $access_token;   
 	}
 
     /**
      * Submit Request
-     *
+     * 
      * Handles submission of all API endpoints queries
-     *
+     * 
      * @param string $url The API endpoint URL
      * @param json $data The data to POST to the endpoint $url
      * @return object|boolean Curl response or FALSE on failure
@@ -178,9 +178,9 @@ class MpesaController extends Controller
 
     /**
      * Business to Client
-     *
+     * 
      * This method is used to send money to the clients Mpesa account.
-     *
+     * 
      * @param int $amount The amount to send to the client
      * @param int $phone The phone number of the client in the format 2547xxxxxxxx
      * @return object Curl Response from submit_request, FALSE on failure
@@ -201,7 +201,6 @@ class MpesaController extends Controller
             'ResultURL' => $this->callback_baseurl.'b2c/callback',
             'Occasion' => 'Optional' //Optional
         );
-        dd($request_data);
         $data = json_encode($request_data);
         $url = $this->base_url.'b2c/v1/paymentrequest';
         $response = $this->submit_request($url, $data);
@@ -210,23 +209,23 @@ class MpesaController extends Controller
 
     /**
      * B2C Callback
-     *
+     * 
      * This method is used to confirm a B2C Transaction that has passed various methods set by the developer during validation
-     *
+     * 
      * @param array $request from mpesa api
      * @return json respone for payment detials i.e transcation code and timestamps e.t.c
      */
     public function callback_b2c(Request $request) {
     	Log::info("b2c callback");
-        Log::info(print_r($request->all(), true));
+        Log::info(print_r($request->all(), true));        
         return ;
     }
 
     /**
      * Business to Business
-     *
+     * 
      * This method is used to send money to other business Mpesa paybills.
-     *
+     * 
      * @param int $amount The amount to send to the business
      * @param int $shortcode The shortcode of the business to send to
      * @return object Curl Response from submit_request, FALSE on failure
@@ -236,7 +235,7 @@ class MpesaController extends Controller
         $request_data = array(
             'Initiator' => $this->initiator_username,
             'SecurityCredential' => $this->cred,
-            'CommandID' => 'BusinessPayBill',
+            'CommandID' => 'BusinessToBusinessTransfer',
             'SenderIdentifierType' => 'Shortcode',
             'RecieverIdentifierType' => 'Shortcode',
             'Amount' => $request->amount,
@@ -255,23 +254,23 @@ class MpesaController extends Controller
 
      /**
      * B2B Callback
-     *
+     * 
      * This method is used to confirm a B2B Transaction that has passed various methods set by the developer during validation
-     *
+     * 
      * @param array $request from mpesa api
      * @return json respone for payment detials i.e transcation code and timestamps e.t.c
      */
     public function callback_b2b(Request $request) {
     	Log::info("b2b callback");
-        Log::info(print_r($request->all(), true));
+        Log::info(print_r($request->all(), true));        
         return ;
     }
 
     /**
      * Client to Business
-     *
+     * 
      * This method is used to register URLs for callbacks when money is sent from the MPesa toolkit menu
-     *
+     * 
      * @param string $confirmURL The local URL that MPesa calls to confirm a payment
      * @param string $ValidationURL The local URL that MPesa calls to validate a payment
      * @return object Curl Response from submit_request, FALSE on failure
@@ -292,9 +291,9 @@ class MpesaController extends Controller
 
     /**
      * C2B Simulation
-     *
+     * 
      * This method is used to simulate a C2B Transaction to test your ConfirmURL and ValidationURL in the Client to Business method
-     *
+     * 
      * @param int $amount The amount to send to Paybill number
      * @param int $msisdn A dummy Safaricom phone number to simulate transaction in the format 2547xxxxxxxx
      * @param string $ref A reference name for the transaction
@@ -317,9 +316,9 @@ class MpesaController extends Controller
 
     /**
      * C2B Validation
-     *
+     * 
      * This method is used to validate a C2B Transaction aganist an various methods set by the developer
-     *
+     * 
      * @param array $request from mpesa api
      * @return json respone for payment accepted or rejected
      */
@@ -349,23 +348,23 @@ class MpesaController extends Controller
 
     /**
      * C2B Confirmation
-     *
+     * 
      * This method is used to confirm a C2B Transaction that has passed various methods set by the developer during validation
-     *
+     * 
      * @param array $request from mpesa api
      * @return json respone for payment detials i.e transcation code and timestamps e.t.c
      */
     public function confirm_c2b(Request $request) {
     	Log::info("confirming");
-        Log::info(print_r($request->all(), true));
+        Log::info(print_r($request->all(), true));        
         return ;
     }
 
     /**
      * Check Balance
-     *
+     * 
      * Check Paybill balance
-     *
+     * 
      * @return object Curl Response from submit_request, FALSE on failure
      */
     public function check_balance(){
@@ -376,10 +375,8 @@ class MpesaController extends Controller
             'Remarks' => 'Remarks or short description',
             'Initiator' => $this->initiator_username,
             'SecurityCredential' => $this->cred,
-            //~ 'QueueTimeOutURL' => $this->callback_baseurl.'check_balance/callback',
-            'QueueTimeOutURL' => 'https://dev.matrixcyber.co.ke/cf.php',
-            //~ 'ResultURL' => $this->callback_baseurl.'check_balance/callback'
-            'ResultURL' => 'https://dev.matrixcyber.co.ke/cf.php'
+            'QueueTimeOutURL' => $this->callback_baseurl.'check_balance/callback',
+            'ResultURL' => $this->callback_baseurl.'check_balance/callback'
         );
         $data = json_encode($data);
         $url = $this->base_url.'accountbalance/v1/query';
@@ -389,19 +386,19 @@ class MpesaController extends Controller
 
     public function check_balance_callback(Request $request) {
     	Log::info("checking balance");
-        Log::info(print_r($request->all(), true));
+        Log::info(print_r($request->all(), true));        
         return ;
     }
 
     /**
      * Transaction status request
-     *
+     * 
      * This method is used to check a transaction status
-     *
+     * 
      * @param string $transaction ID eg LH7819VXPE
      * @return object Curl Response from submit_request, FALSE on failure
      */
-
+     
     public function status_request(Request $request){
         $data = array(
             'CommandID' => 'TransactionStatusQuery',
@@ -423,21 +420,21 @@ class MpesaController extends Controller
 
     public function status_request_callback(Request $request) {
     	Log::info("checking status request");
-        Log::info(print_r($request->all(), true));
+        Log::info(print_r($request->all(), true));        
         return ;
     }
 
     /**
      * Transaction Reversal
-     *
+     * 
      * This method is used to reverse a transaction
-     *
+     * 
      * @param int $receiver Phone number in the format 2547xxxxxxxx
      * @param string $trx_id Transaction ID of the Transaction you want to reverse eg LH7819VXPE
      * @param int $amount The amount from the transaction to reverse
      * @return object Curl Response from submit_request, FALSE on failure
      */
-
+     
     public function reverse_transaction(Request $request){
         $data = array(
             'CommandID' => 'TransactionReversal',
@@ -459,20 +456,20 @@ class MpesaController extends Controller
 
     public function reverse_transaction_callback(Request $request) {
     	Log::info("reverseing transaction");
-        Log::info(print_r($request->all(), true));
+        Log::info(print_r($request->all(), true));        
         return ;
     }
-
+    
     /*********************************************************************
-     *
+     * 
      *  LNMO APIs
-     *
+     * 
      * *******************************************************************/
     /**
      * lnmo request
-     *
+     * 
      * This method is used to initiate online payment on behalf of a customer.
-     *
+     * 
      * @param array $request from mpesa api
      * @return json respone for payment detials i.e transcation code and timestamps e.t.c
      */
@@ -505,23 +502,23 @@ class MpesaController extends Controller
 
     /**
      * lnmo callback
-     *
+     * 
      * This method is used to confirm a lnmo Transaction that has passed various methods set by the developer during validation
-     *
+     * 
      * @param array $request from mpesa api
      * @return json respone for payment detials i.e transcation code and timestamps e.t.c
      */
     public function lnmo_callback(Request $request) {
     	Log::info("lnmo callback");
-        Log::info(print_r($request->all(), true));
+        Log::info(print_r($request->all(), true));        
         return ;
     }
-
+    
     /**
      * lnmo query
-     *
+     * 
      * This method is used to check the status of a Lipa Na M-Pesa Online Payment.
-     *
+     * 
      * @param array $request from mpesa api
      * @return json respone for payment detials i.e transcation code and timestamps e.t.c
      */
@@ -533,7 +530,7 @@ class MpesaController extends Controller
             //throw new Exception("Checkout Request ID cannot be null");
             return FALSE;
         }
-
+        
         $data = array(
             'BusinessShortCode' => $this->lipa_na_mpesa,
             'Password' => $passwd,
